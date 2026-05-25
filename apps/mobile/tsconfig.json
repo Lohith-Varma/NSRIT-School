@@ -1,0 +1,31 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/data/*": ["../../data/*"],
+      "@/core/*": ["./src/core/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/modules/*": ["./src/modules/*"],
+      "@/roles/*": ["./src/roles/*"],
+      "@/state/*": ["./src/state/*"],
+      "@/assets/*": ["./src/assets/*"],
+      "@/components/*": ["./src/shared/components/*"],
+      "@/services/*": ["./src/shared/services/*"],
+      "@/hooks/*": ["./src/core/hooks/*"],
+      "@/types": ["./src/core/types"],
+      "@/utils/*": ["./src/core/utils/*"],
+      "@/constants/Theme": ["./src/core/theme/Theme"],
+      "@/constants/*": ["./src/core/constants/*"],
+      "@/context/*": ["./src/state/auth/*"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ]
+}
