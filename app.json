@@ -3,6 +3,12 @@
     "name": "NSRIT-School",
     "slug": "NSRIT-School",
     "version": "1.0.0",
+    "sdkVersion": "54.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "nsritschool",

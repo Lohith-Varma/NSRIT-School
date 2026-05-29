@@ -1,3 +1,6 @@
+import { AdminCard } from '@/components/admin/AdminCard';
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
@@ -7,10 +10,12 @@ import { useActor } from '@/hooks/useActor';
 import {
   createBranch,
   deleteBranch,
+  listBranchCards,
   listBranches,
   provisionBranchAdmin,
   updateBranch,
 } from '@/services/api';
+import type { AdminBranchCard } from '@/types/admin';
 import type { Branch } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -27,12 +32,15 @@ export default function MainAdminBranchesScreen() {
   const [provisionBranchId, setProvisionBranchId] = useState('');
   const [adminName, setAdminName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
+  const [cards, setCards] = useState<AdminBranchCard[]>([]);
+  const [search, setSearch] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await listBranches(actor);
+      const [list, cardList] = await Promise.all([listBranches(actor), listBranchCards(actor)]);
       setBranches(list);
+      setCards(cardList);
     } finally {
       setLoading(false);
     }
@@ -105,8 +113,59 @@ export default function MainAdminBranchesScreen() {
     }
   };
 
+  const filteredCards = cards.filter(
+    (c) =>
+      c.name.toLowerCase().includes(search.toLowerCase()) ||
+      c.location.toLowerCase().includes(search.toLowerCase()),
+  );
+
   return (
-    <Screen loading={loading} scroll>
+    <Screen loading={loading} scroll embedded>
+      <AdminPageHeader
+        title="Branch Management"
+        subtitle="Overview and control of all institution branches."
+        action={
+          <Button
+            title="+ New"
+            variant="secondary"
+            onPress={() => setShowCreate((v) => !v)}
+          />
+        }
+      />
+      <AdminSearchBar value={search} onChangeText={setSearch} placeholder="Search branches..." />
+
+      <View style={styles.bento}>
+        {filteredCards.map((card) => (
+          <AdminCard key={card.id} style={styles.branchCard}>
+            <View style={styles.branchCardHeader}>
+              <View>
+                <Text style={styles.branchName}>{card.name}</Text>
+                <Text style={styles.branchLoc}>{card.location}</Text>
+              </View>
+              <Text
+                style={[
+                  styles.statusPill,
+                  card.status === 'review' ? styles.statusReview : styles.statusActive,
+                ]}>
+                {card.status === 'review' ? 'Review' : 'Active'}
+              </Text>
+            </View>
+            <View style={styles.branchStats}>
+              <View style={styles.miniStat}>
+                <Text style={styles.miniLabel}>Students</Text>
+                <Text style={styles.miniValue}>{card.students.toLocaleString()}</Text>
+              </View>
+              <View style={styles.miniStat}>
+                <Text style={styles.miniLabel}>Revenue</Text>
+                <Text style={[styles.miniValue, { color: AppTheme.accent }]}>
+                  ${(card.revenue / 1_000_000).toFixed(1)}M
+                </Text>
+              </View>
+            </View>
+          </AdminCard>
+        ))}
+      </View>
+
       <Button
         title={showCreate ? 'Cancel' : '+ New branch'}
         variant="secondary"
@@ -172,6 +231,25 @@ export default function MainAdminBranchesScreen() {
 }
 
 const styles = StyleSheet.create({
+  bento: { gap: 12, marginBottom: 16 },
+  branchCard: { marginBottom: 0 },
+  branchCardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
+  branchName: { fontSize: 18, fontWeight: '600', color: AppTheme.text },
+  branchLoc: { fontSize: 12, color: AppTheme.textMuted, marginTop: 2 },
+  statusPill: { fontSize: 11, fontWeight: '700', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 20 },
+  statusActive: { backgroundColor: `${AppTheme.accent}22`, color: AppTheme.accent },
+  statusReview: { backgroundColor: AppTheme.admin.errorContainer, color: AppTheme.admin.onErrorContainer },
+  branchStats: { flexDirection: 'row', gap: 12 },
+  miniStat: {
+    flex: 1,
+    backgroundColor: AppTheme.admin.surfaceContainerLow,
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: AppTheme.admin.surfaceContainerHigh,
+  },
+  miniLabel: { fontSize: 11, color: AppTheme.textMuted },
+  miniValue: { fontSize: 18, fontWeight: '700', color: AppTheme.admin.primaryContainer, marginTop: 4 },
   form: { marginTop: 12 },
   formTitle: { fontSize: 17, fontWeight: '600', marginBottom: 8, color: AppTheme.text },
   section: {

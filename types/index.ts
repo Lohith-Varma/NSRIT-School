@@ -139,6 +139,31 @@ export interface StudentInput {
   classId: string;
 }
 
+export interface CoordinatorApprovalRequest {
+  id: string;
+  studentName: string;
+  classLabel: string;
+  reason: string;
+  duration: string;
+  urgency: 'urgent' | 'normal';
+}
+
+export interface CoordinatorDiaryEntry {
+  id: string;
+  teacherName: string;
+  subject: string;
+  details: string;
+  date: string;
+}
+
+export interface CoordinatorCircularReview {
+  id: string;
+  title: string;
+  subtitle: string;
+  category: string;
+  status: 'draft' | 'review' | 'published';
+}
+
 export interface WingAnalytics {
   wing: Wing;
   studentCount: number;

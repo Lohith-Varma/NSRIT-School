@@ -1,8 +1,8 @@
 import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
 import { StatCard, StatRow } from '@/components/ui/StatCard';
-import { formatWing } from '@/constants/Wings';
 import { AppTheme, formatCurrency } from '@/constants/Theme';
+import { formatWing } from '@/constants/Wings';
 import { useActor } from '@/hooks/useActor';
 import { getSchoolAnalytics } from '@/services/api';
 import type { SchoolAnalytics } from '@/types';
@@ -83,6 +83,18 @@ export default function PrincipalDashboard() {
         <Card style={styles.action}>
           <Text style={styles.actionTitle}>Manage teachers</Text>
           <Text style={styles.actionDesc}>Onboard staff and assign classes</Text>
+        </Card>
+      </Pressable>
+      <Pressable onPress={() => router.push('/(principal)/attendance')}>
+        <Card style={styles.action}>
+          <Text style={styles.actionTitle}>Attendance oversight</Text>
+          <Text style={styles.actionDesc}>Review class attendance and fee performance</Text>
+        </Card>
+      </Pressable>
+      <Pressable onPress={() => router.push('/(principal)/fees')}>
+        <Card style={styles.action}>
+          <Text style={styles.actionTitle}>Fee tracking</Text>
+          <Text style={styles.actionDesc}>View fee status for your branch classes</Text>
         </Card>
       </Pressable>
     </Screen>

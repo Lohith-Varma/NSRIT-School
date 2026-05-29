@@ -6,6 +6,8 @@ export * from './classes';
 export * from './coordinator';
 export * from './fees';
 export * from './mainAdmin';
+export * from './adminPortal';
+export * from './branchAdmin';
 export * from './parent';
 export * from './principal';
 export * from './rbac';
