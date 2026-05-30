@@ -1,9 +1,9 @@
 import { mockStore } from '@/data/mock/store';
-import type { FeePaymentStatus, FeeStatus } from '@/types';
+import type { FeePaymentStatus, FeeStatus, User } from '@/types';
+import { getStudentsInClass } from './classes';
 import { ApiError, mockRequest } from './client';
 import { assertParentChildAccess } from './parent';
 import { assertActorOwnsClass, assertPermission, assertRole } from './rbac';
-import { getStudentsInClass } from './classes';
 
 export interface ClassFeeRow extends FeeStatus {
   studentName: string;
@@ -12,12 +12,13 @@ export interface ClassFeeRow extends FeeStatus {
 /** GET /classes/:classId/fees */
 export async function getClassFeeStatuses(actor: User, classId: string): Promise<ClassFeeRow[]> {
   assertPermission(actor, 'fees:read');
-  assertRole(actor, 'teacher');
+  assertRole(actor, 'teacher', 'principal', 'branch_admin');
 
   const cls = mockStore.classes.find((c) => c.id === classId);
   if (!cls) throw new ApiError('Class not found', 404);
   assertActorOwnsClass(actor, cls);
-  if (cls.teacherId !== actor.id) {
+
+  if (actor.role === 'teacher' && cls.teacherId !== actor.id) {
     throw new ApiError('You are not assigned to this class', 403);
   }
 

@@ -7,7 +7,7 @@ import { getClassesForTeacher } from '@/services/api';
 import type { Class } from '@/types';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function TeacherDashboard() {
   const router = useRouter();
@@ -56,8 +56,30 @@ export default function TeacherDashboard() {
               <Text style={styles.actionDesc}>Paid, pending, and due amounts</Text>
             </Card>
           </Pressable>
+          <Pressable onPress={() => router.push('/(teacher)/diary')}>
+            <Card style={styles.actionCard}>
+              <Text style={styles.actionTitle}>Diary works</Text>
+              <Text style={styles.actionDesc}>Review and publish student notes</Text>
+            </Card>
+          </Pressable>
+          <Pressable onPress={() => router.push('/(teacher)/notifications')}>
+            <Card style={styles.actionCard}>
+              <Text style={styles.actionTitle}>Notifications</Text>
+              <Text style={styles.actionDesc}>Review campus alerts and updates</Text>
+            </Card>
+          </Pressable>
+          <Pressable onPress={() => router.push('/(teacher)/students')}>
+            <Card style={styles.actionCard}>
+              <Text style={styles.actionTitle}>Student list</Text>
+              <Text style={styles.actionDesc}>View your class roster</Text>
+            </Card>
+          </Pressable>
 
-          <StatCard label="Students" value={String(primaryClass.studentIds.length)} />
+          <View style={styles.statsRow}>
+            <StatCard label="Students" value={String(primaryClass.studentIds.length)} />
+            <StatCard label="Class" value={`${primaryClass.grade}${primaryClass.section}`} />
+            <StatCard label="Subject" value={primaryClass.subject} />
+          </View>
         </>
       ) : (
         <Card>
@@ -112,5 +134,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: AppTheme.textMuted,
     marginTop: 4,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
   },
 });

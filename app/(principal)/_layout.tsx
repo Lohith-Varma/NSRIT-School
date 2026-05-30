@@ -1,5 +1,5 @@
-import { useAuth } from '@/context/AuthContext';
 import { AppTheme } from '@/constants/Theme';
+import { useAuth } from '@/context/AuthContext';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { Redirect, Tabs } from 'expo-router';
 import { Pressable, Text } from 'react-native';
@@ -63,6 +63,15 @@ export default function PrincipalLayout() {
           tabBarIcon: ({ color }) => <TabIcon name="bar-chart" color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          tabBarIcon: ({ color }) => <TabIcon name="user" color={color} />,
+        }}
+      />
+      <Tabs.Screen name="attendance" options={{ href: null }} />
+      <Tabs.Screen name="fees" options={{ href: null }} />
     </Tabs>
   );
 }

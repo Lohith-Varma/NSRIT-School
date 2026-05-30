@@ -1,3 +1,5 @@
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminSearchBar } from '@/components/admin/AdminSearchBar';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { FormField } from '@/components/ui/FormField';
@@ -14,10 +16,12 @@ import {
   updateClass,
 } from '@/services/api';
 import type { Class, Wing } from '@/types';
+import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function BranchAdminClassesScreen() {
+  const router = useRouter();
   const actor = useActor();
   const [classes, setClasses] = useState<Class[]>([]);
   const [teachers, setTeachers] = useState<{ id: string; name: string }[]>([]);
@@ -104,7 +108,23 @@ export default function BranchAdminClassesScreen() {
   };
 
   return (
-    <Screen loading={loading} scroll>
+    <Screen loading={loading} scroll embedded>
+      <AdminPageHeader
+        title="Academic Course Management"
+        subtitle="Manage classes, sections, and assigned teachers."
+      />
+      <View style={styles.topActions}>
+        <Button
+          title="Full course table"
+          variant="outline"
+          onPress={() => router.push('/(branch-admin)/courses-manage' as never)}
+        />
+        <Button
+          title="Create course"
+          variant="secondary"
+          onPress={() => router.push('/(branch-admin)/courses-add' as never)}
+        />
+      </View>
       <Button
         title={showForm ? 'Cancel' : '+ Add class'}
         variant="secondary"
@@ -156,6 +176,7 @@ export default function BranchAdminClassesScreen() {
 }
 
 const styles = StyleSheet.create({
+  topActions: { flexDirection: 'row', gap: 8, marginBottom: 8 },
   form: { marginTop: 12 },
   formTitle: { fontSize: 17, fontWeight: '600', marginBottom: 8, color: AppTheme.text },
   wingLabel: { fontSize: 14, fontWeight: '600', color: AppTheme.text, marginTop: 8 },

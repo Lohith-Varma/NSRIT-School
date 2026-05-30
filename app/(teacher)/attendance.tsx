@@ -5,18 +5,19 @@ import { Screen } from '@/components/ui/Screen';
 import { AppTheme, todayIso } from '@/constants/Theme';
 import { useAuth } from '@/context/AuthContext';
 import {
-  getClassAttendanceForDate,
-  getClassesForTeacher,
-  getStudentsInClass,
-  postClassAttendance,
+    getClassAttendanceForDate,
+    getClassesForTeacher,
+    getStudentsInClass,
+    postClassAttendance,
 } from '@/services/api';
-import type { AttendanceStatus, User } from '@/types';
+import type { AttendanceStatus, Class, User } from '@/types';
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 export default function TeacherAttendanceScreen() {
   const { user } = useAuth();
-  const [classId, setClassId] = useState<string | null>(null);
+  const [classes, setClasses] = useState<Class[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState<string | null>(null);
   const [students, setStudents] = useState<User[]>([]);
   const [date, setDate] = useState(todayIso());
   const [marks, setMarks] = useState<Record<string, AttendanceStatus>>({});
@@ -24,20 +25,29 @@ export default function TeacherAttendanceScreen() {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
-  const loadData = useCallback(async () => {
+  const loadClassList = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    setMessage(null);
-    try {
-      const classes = await getClassesForTeacher(user, user.id);
-      const cid = classes[0]?.id;
-      if (!cid) return;
-      setClassId(cid);
 
-      const roster = await getStudentsInClass(user, cid);
+    try {
+      const classList = await getClassesForTeacher(user, user.id);
+      setClasses(classList);
+      setSelectedClassId((current) => current ?? classList[0]?.id ?? null);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
+  const loadAttendance = useCallback(async () => {
+    if (!user || !selectedClassId) return;
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const roster = await getStudentsInClass(user, selectedClassId);
       setStudents(roster);
 
-      const existing = await getClassAttendanceForDate(user, cid, date);
+      const existing = await getClassAttendanceForDate(user, selectedClassId, date);
       const initial: Record<string, AttendanceStatus> = {};
       for (const s of roster) {
         const found = existing.find((r) => r.studentId === s.id);
@@ -47,14 +57,18 @@ export default function TeacherAttendanceScreen() {
     } finally {
       setLoading(false);
     }
-  }, [user, date]);
+  }, [user, selectedClassId, date]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    loadClassList();
+  }, [loadClassList]);
+
+  useEffect(() => {
+    loadAttendance();
+  }, [loadAttendance]);
 
   const handleSubmit = async () => {
-    if (!user || !classId) return;
+    if (!user || !selectedClassId) return;
     setSubmitting(true);
     setMessage(null);
     try {
@@ -62,7 +76,7 @@ export default function TeacherAttendanceScreen() {
         studentId: s.id,
         status: marks[s.id] ?? 'present',
       }));
-      await postClassAttendance(user, classId, date, payload);
+      await postClassAttendance(user, selectedClassId, date, payload);
       setMessage('Attendance posted successfully.');
       Alert.alert('Success', 'Daily attendance has been saved.');
     } catch {
@@ -72,20 +86,53 @@ export default function TeacherAttendanceScreen() {
     }
   };
 
+  const selectedClass = classes.find((cls) => cls.id === selectedClassId);
+
   return (
     <Screen loading={loading} scroll>
+      <Card>
+        <Text style={styles.label}>Select class</Text>
+        <View style={styles.classRow}>
+          {classes.map((cls) => (
+            <Pressable
+              key={cls.id}
+              style={[
+                styles.classChip,
+                selectedClassId === cls.id && styles.classChipActive,
+              ]}
+              onPress={() => setSelectedClassId(cls.id)}>
+              <Text
+                style={[
+                  styles.classChipText,
+                  selectedClassId === cls.id && styles.classChipTextActive,
+                ]}>
+                {cls.name} {cls.section}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+        <Text style={styles.hint}>Update the class and date before posting attendance.</Text>
+      </Card>
+
       <Card>
         <Text style={styles.label}>Date (YYYY-MM-DD)</Text>
         <TextInput
           style={styles.input}
           value={date}
           onChangeText={setDate}
-          onBlur={loadData}
           placeholder="2026-05-15"
           placeholderTextColor={AppTheme.textMuted}
         />
-        <Text style={styles.hint}>Edit date and tap away to load records for that day.</Text>
       </Card>
+
+      {selectedClass ? (
+        <Card style={styles.summaryCard}>
+          <Text style={styles.className}>
+            Grade {selectedClass.grade} — {selectedClass.name} ({selectedClass.section})
+          </Text>
+          <Text style={styles.meta}>{selectedClass.studentIds.length} students</Text>
+        </Card>
+      ) : null}
 
       <Text style={styles.section}>Students</Text>
       <Card>
@@ -132,6 +179,45 @@ const styles = StyleSheet.create({
     color: AppTheme.textMuted,
     textTransform: 'uppercase',
     marginBottom: 8,
+  },
+  classRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: 12,
+  },
+  classChip: {
+    backgroundColor: AppTheme.surface,
+    borderWidth: 1,
+    borderColor: AppTheme.border,
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginRight: 10,
+    marginBottom: 10,
+  },
+  classChipActive: {
+    backgroundColor: AppTheme.primary,
+    borderColor: AppTheme.primary,
+  },
+  classChipText: {
+    color: AppTheme.text,
+    fontWeight: '600',
+  },
+  classChipTextActive: {
+    color: '#fff',
+  },
+  summaryCard: {
+    marginBottom: 12,
+  },
+  className: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: AppTheme.text,
+  },
+  meta: {
+    fontSize: 13,
+    color: AppTheme.textMuted,
+    marginTop: 6,
   },
   success: {
     color: AppTheme.success,

@@ -1,3 +1,5 @@
+import { AdminPageHeader } from '@/components/admin/AdminPageHeader';
+import { AdminStatGrid } from '@/components/admin/AdminStatGrid';
 import { Card } from '@/components/ui/Card';
 import { Screen } from '@/components/ui/Screen';
 import { StatCard, StatRow } from '@/components/ui/StatCard';
@@ -27,7 +29,11 @@ export default function MainAdminInsightsScreen() {
     ) ?? [];
 
   return (
-    <Screen loading={loading} scroll>
+    <Screen loading={loading} scroll embedded>
+      <AdminPageHeader
+        title="Global Analytics"
+        subtitle="Comprehensive overview of institution performance."
+      />
       <Text style={styles.intro}>
         {selectedBranchFocusId
           ? 'Showing metrics for the branch selected on the Network tab.'
@@ -36,6 +42,17 @@ export default function MainAdminInsightsScreen() {
 
       {data ? (
         <>
+          <AdminStatGrid
+            items={[
+              {
+                label: 'Total Revenue',
+                value: formatCurrency(data.totalFeesCollected + data.totalFeesOutstanding),
+              },
+              { label: 'Avg Attendance', value: `${data.overallAttendanceRate}%`, tone: 'secondary' },
+              { label: 'Active Users', value: String(data.totalStudents + data.totalTeachers) },
+              { label: 'Branches', value: `${data.activeBranches}/${data.totalBranches}` },
+            ]}
+          />
           <StatRow>
             <StatCard label="Total students" value={String(data.totalStudents)} />
             <StatCard label="Total teachers" value={String(data.totalTeachers)} />

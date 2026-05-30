@@ -1,20 +1,20 @@
 import { ChildSwitcher } from '@/components/parent/ChildSwitcher';
 import { childGradeLabel, childInitials } from '@/components/parent/childUtils';
-import { formatWing } from '@/constants/Wings';
 import { AppTheme } from '@/constants/Theme';
+import { formatWing } from '@/constants/Wings';
 import { useAuth } from '@/context/AuthContext';
 import { sx } from '@/utils/styles';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { usePathname, useRouter } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  useWindowDimensions,
+    Modal,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    View,
+    useWindowDimensions,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -22,6 +22,9 @@ const NAV = [
   { href: '/(parent)' as const, label: 'Dashboard', icon: 'home' as const, segment: '' },
   { href: '/(parent)/attendance' as const, label: 'Attendance', icon: 'calendar' as const, segment: 'attendance' },
   { href: '/(parent)/fees' as const, label: 'Fees', icon: 'credit-card' as const, segment: 'fees' },
+  { href: '/(parent)/notifications' as const, label: 'Notices', icon: 'bell' as const, segment: 'notifications' },
+  { href: '/(parent)/suggestion' as const, label: 'Suggestion Box', icon: 'comments' as const, segment: 'suggestion' },
+  { href: '/(parent)/profile' as const, label: 'Profile', icon: 'user' as const, segment: 'profile' },
 ];
 
 function NavLinks({
